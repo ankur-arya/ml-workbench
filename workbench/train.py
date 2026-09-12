@@ -174,7 +174,20 @@ def _log_sklearn_model(model: object, X_train: object, cfg: TrainConfig) -> None
         "input_example": example,
         "registered_model_name": registered,
     }
+    # MLflow 3: `name` creates a Logged Model (and optional registry entry).
     try:
         mlflow.sklearn.log_model(name="model", **common)
     except TypeError:
         mlflow.sklearn.log_model(artifact_path="model", **common)
+        return
+
+    # Also attach the sklearn flavor under the run so it shows in Artifacts.
+    with tempfile.TemporaryDirectory() as tmp:
+        dest = Path(tmp) / "model"
+        mlflow.sklearn.save_model(
+            sk_model=model,
+            path=str(dest),
+            signature=signature,
+            input_example=example,
+        )
+        mlflow.log_artifacts(str(dest), artifact_path="model")

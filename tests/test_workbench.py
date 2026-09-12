@@ -53,10 +53,12 @@ def test_train_logs_metrics_and_model(tmp_path: Path) -> None:
     assert logged.data.metrics["test_accuracy"] > 0.7
     assert logged.data.params["dataset"] == "iris"
     artifacts = [item.path for item in client.list_artifacts(run.info.run_id)]
-    assert "model" in artifacts or any(path.startswith("model") for path in artifacts)
     models = client.search_registered_models()
     names = {model.name for model in models}
     assert "iris-logistic_regression" in names
+    assert "model" in artifacts or any(path.startswith("model") for path in artifacts)
+    assert "plots" in artifacts
+    assert "reports" in artifacts
 
 
 def test_compare_creates_nested_runs(tmp_path: Path) -> None:
