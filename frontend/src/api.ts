@@ -1,5 +1,25 @@
 const JSON_HEADERS = { "Content-Type": "application/json" };
 
+/** Parse an HTTP error body that was already read as text. Never reads the Response again. */
+export function errorDetailFromBody(raw: string, fallback: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return fallback;
+  try {
+    const body = JSON.parse(trimmed) as { detail?: unknown };
+    if (typeof body.detail === "string") return body.detail;
+    if (body.detail != null) return JSON.stringify(body.detail);
+    return JSON.stringify(body);
+  } catch {
+    return raw;
+  }
+}
+
+async function readErrorDetail(response: Response): Promise<string> {
+  const fallback = response.statusText || `Request failed (${response.status})`;
+  const raw = await response.text();
+  return errorDetailFromBody(raw, fallback);
+}
+
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   if (init?.body && !(init.body instanceof FormData) && !headers.has("Content-Type")) {
@@ -7,13 +27,7 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   }
   const response = await fetch(path, { ...init, headers });
   if (!response.ok) {
-    let detail = response.statusText;
-    try {
-      const body = await response.json();
-      detail = typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail || body);
-    } catch {
-      detail = await response.text();
-    }
+    const detail = await readErrorDetail(response);
     throw new Error(detail || `Request failed (${response.status})`);
   }
   if (response.status === 204) {
