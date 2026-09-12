@@ -94,7 +94,6 @@ export function Registry() {
           defaultStage={promote.stage}
           onClose={() => setPromote(null)}
           onDone={() => {
-            setPromote(null);
             void load();
           }}
         />
