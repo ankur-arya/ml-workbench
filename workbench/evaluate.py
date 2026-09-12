@@ -9,6 +9,7 @@ import pandas as pd
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
+    confusion_matrix,
     f1_score,
     mean_absolute_error,
     mean_squared_error,
@@ -75,10 +76,29 @@ def classification_report_text(
     return classification_report(y_true, y_pred, labels=labels, target_names=names, zero_division=0)
 
 
+def confusion_payload(
+    y_true: pd.Series,
+    y_pred: np.ndarray,
+    target_names: list[str] | None,
+) -> dict[str, Any]:
+    labels = list(sorted(pd.unique(y_true)))
+    matrix = confusion_matrix(y_true, y_pred, labels=labels)
+    names = [str(item) for item in labels]
+    if target_names and len(target_names) == len(labels):
+        names = list(target_names)
+    return {"labels": names, "matrix": matrix.astype(int).tolist()}
+
+
+def residual_payload(y_true: pd.Series, y_pred: np.ndarray) -> dict[str, Any]:
+    actual = [float(value) for value in y_true.to_numpy()]
+    predicted = [float(value) for value in np.asarray(y_pred)]
+    residuals = [a - p for a, p in zip(actual, predicted)]
+    return {"y_true": actual, "y_pred": predicted, "residuals": residuals}
+
+
 def estimator_params(model: Any) -> dict[str, Any]:
     inner = unwrap_estimator(model)
     params = inner.get_params(deep=False)
-    # MLflow params must be strings / scalars; stringify nested values.
     sanitized: dict[str, Any] = {}
     for key, value in params.items():
         if value is None or isinstance(value, (str, int, float, bool)):

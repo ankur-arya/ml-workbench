@@ -1,37 +1,26 @@
-# MLflow + scikit-learn workbench
+# Workbench
 
-Local experiment tracking for classical sklearn models. Train on bundled
-scikit-learn datasets, log parameters / metrics / plots / models to MLflow,
-and inspect everything in a local tracking UI. Nothing leaves your machine —
-no Databricks, no cloud secrets.
+**Evaluate. Compare. Promote.**
 
-The previous README described Streamlit dataset/trainer apps that were never
-committed. This repository is now a runnable MLflow workbench.
+A local-first workbench for classical (tabular / sklearn) ML. You train a few
+candidate models, read a **scorecard**, and promote a winner to production with
+one intentional action.
 
-## What you get
+This is not a generic experiment dump and not a GenAI studio. It is built to
+beat ClearML / MLflow UX for the evaluate → compare → promote loop — without
+Docker, without five services, and without leaving your machine.
 
-- **Datasets:** `iris`, `wine`, `breast_cancer` (classification) and `diabetes` (regression)
-- **Models:** logistic regression, random forest, gradient boosting, SVC, linear / ridge / lasso, SVR
-- **Tracking:** params, train/test metrics, confusion-matrix or residual plots, feature importances, `mlflow.sklearn` model artifacts, optional Model Registry entries
-- **CLI + YAML configs** for experiment name, dataset, model, and hyperparameters
-- **Comparison runs** that nest several models under one parent MLflow run
+## Why this exists
 
-Default local store (created in the repo root when you train):
+MLflow and ClearML are run browsers. Workbench is a **decision tool**:
 
-| Path | Role |
-| --- | --- |
-| `mlflow.db` | SQLite backend: experiments, runs, model registry |
-| `mlruns/` | Run artifacts when you train against the SQLite URI directly |
-| `mlartifacts/` | Artifact root if you start `mlflow server` instead of `mlflow ui` |
+1. Run an experiment with several candidates on one or more datasets
+2. Land on a leaderboard with a recommended winner
+3. Promote that winner to the model registry (with who / when / why)
 
-Those paths are gitignored. Use the same backend URI for training and for the UI.
+Day-1 path: `pip install` + one command. SQLite + files on disk. No Docker.
 
-## Requirements
-
-- Python **3.10–3.13** (developed on 3.12)
-- `pip` and a virtual environment (`venv`, Poetry, or `uv` all work)
-
-## Setup
+## Quick start (no Docker)
 
 ```bash
 git clone https://github.com/ankur-arya/ml-workbench.git
@@ -39,182 +28,117 @@ cd ml-workbench
 
 python3 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
-
-python -m pip install --upgrade pip
 pip install -r requirements.txt
+
+# Starts API + UI. First launch builds the React SPA (needs Node 18+).
+python -m workbench ui
 ```
 
-Dependencies are pinned in `requirements.txt` (`mlflow`, `scikit-learn`, `pandas`, `numpy`, `matplotlib`, `PyYAML`, `joblib`, `pytest`).
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
-Optional editable install (adds the `workbench` console script):
+Click **Run demo experiment** — three iris classifiers, a ranked scorecard, and
+a one-click promote.
 
-```bash
-pip install -e .
-```
-
-If you skip the editable install, run commands from the repo root (or `export PYTHONPATH=$PWD`) so `python -m workbench` can import the package.
-
-**Poetry**
-
-```bash
-poetry env use python3.12
-poetry run pip install -r requirements.txt
-```
-
-**uv**
+`uv` works the same way:
 
 ```bash
 uv venv --python 3.12
 source .venv/bin/activate
 uv pip install -r requirements.txt
+python -m workbench ui
 ```
 
-## Train experiments
+Makefile equivalents: `make install`, `make ui`, `make demo`, `make test`.
 
-From the repo root, with the venv active:
+## CLI
 
 ```bash
-# Default: iris RandomForest from configs/iris_random_forest.yaml
+# One model
 python -m workbench train --config configs/iris_random_forest.yaml
 
-# Equivalent Makefile target
-make train
+# Multi-model scorecard (prints a ranked table)
+python -m workbench compare --config configs/compare-models.yaml
 
-# Explicit dataset / model / hyperparameters
-python -m workbench train \
-  --dataset wine \
-  --model logistic_regression \
-  --experiment sklearn-workbench \
-  --param C=0.5 \
-  --param max_iter=800
+# Multi-dataset
+python -m workbench compare --config configs/compare-datasets.yaml
 
-# Regression example
-python -m workbench train --config configs/diabetes_ridge.yaml
+# Promote the recommended winner
+python -m workbench promote --experiment exp_… --note "Best holdout accuracy on iris"
 
-# Breast cancer Gradient Boosting
-python -m workbench train --config configs/breast_cancer_gb.yaml
-```
+# Built-in iris bakeoff
+python -m workbench demo
 
-Compare several models (nested MLflow runs under one parent):
-
-```bash
-python -m workbench compare --dataset iris --dataset wine --dataset diabetes
-make compare
-```
-
-List what the workbench knows about:
-
-```bash
 python -m workbench info
-python -m workbench info --dataset iris
 ```
 
-Shell wrappers (same defaults, extra args forwarded):
+Train flags still accept `--dataset`, `--model`, `--param KEY=VALUE`.
 
-```bash
-chmod +x scripts/*.sh
-./scripts/train.sh --config configs/iris_random_forest.yaml
-./scripts/compare.sh --dataset iris --model random_forest --model logistic_regression
-```
+## What you get
 
-### Defaults
-
-| Setting | Default |
+| Surface | Role |
 | --- | --- |
-| Experiment | `sklearn-workbench` |
-| Dataset | `iris` |
-| Model | `random_forest` |
-| Test split | `0.2` (stratified for classification) |
-| Seed | `42` |
-| Tracking URI | `sqlite:///mlflow.db` or `$MLFLOW_TRACKING_URI` |
-| Model registry | on (`dataset-model`, e.g. `iris-random_forest`) |
+| **Experiments** | Status, best metric, candidate count, last updated |
+| **New experiment wizard** | Datasets × models × a primary metric, then run locally |
+| **Compare (hero)** | Leaderboard, dataset facets, recommended winner, side-by-side |
+| **Run detail** | Params, metrics, artifacts, dataset lineage |
+| **Registry** | candidate → staging → production (champion / challenger) |
+| **Datasets** | sklearn builtins + local CSV registration |
 
-Linear and kernel models are wrapped in a `StandardScaler` pipeline. Tree ensembles are not.
+Bundled datasets: `iris`, `wine`, `breast_cancer` (classification), `diabetes`
+(regression). Models: logistic regression, random forest, gradient boosting,
+SVC, linear / ridge / lasso, SVR.
 
-## Start the local MLflow UI
+## Local storage
 
-Train first so the SQLite file exists, then:
+Override the data directory with `WORKBENCH_HOME` (or `--home`). Default is
+`./.workbench` in the current working directory.
 
-```bash
-mlflow ui --backend-store-uri sqlite:///mlflow.db --host 127.0.0.1 --port 5000
-```
+| Path | Role |
+| --- | --- |
+| `.workbench/workbench.db` | SQLite: experiments, runs, metrics, registry |
+| `.workbench/artifacts/` | Plots, reports, `model.joblib` |
+| `.workbench/datasets/` | Copies of registered CSV files |
 
-Or:
+Those paths are gitignored.
 
-```bash
-make ui
-./scripts/start_mlflow_ui.sh
-```
-
-Open [http://127.0.0.1:5000](http://127.0.0.1:5000).
-
-You should see:
-
-1. Experiment **sklearn-workbench**
-2. Individual runs (and a parent `compare-…` run if you used `compare`)
-3. Params, tagged metadata, and `test_*` / `train_*` metrics
-4. Artifacts: `model/` (sklearn flavor), `plots/`, `reports/`
-5. Registered models on the **Models** page (`iris-random_forest`, …)
-
-### Optional: `mlflow server`
-
-Use this when you want a tracking *server* (HTTP) instead of opening the file store directly. Start the server **before** training and point the client at it:
-
-```bash
-mlflow server \
-  --backend-store-uri sqlite:///mlflow.db \
-  --default-artifact-root ./mlartifacts \
-  --host 127.0.0.1 \
-  --port 5000
-
-export MLFLOW_TRACKING_URI=http://127.0.0.1:5000
-python -m workbench train --config configs/iris_random_forest.yaml
-```
-
-Do not mix the two workflows in the same checkout unless you keep the backend URI and artifact root consistent. The file-store + `mlflow ui` path is the documented default.
-
-## Example session
-
-```bash
-source .venv/bin/activate
-pip install -r requirements.txt
-
-python -m workbench train --dataset iris --model random_forest --param n_estimators=200
-python -m workbench train --dataset wine --model gradient_boosting
-python -m workbench compare --dataset iris --model logistic_regression --model random_forest
-
-mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5000
-```
-
-## Project layout
+## Architecture
 
 ```
-workbench/                 Python package (CLI + training)
-  cli.py                   argparse: train / compare / info
-  train.py                 fit, evaluate, log to MLflow
-  datasets.py              sklearn dataset loaders
-  models.py                estimator factory + pipelines
-  evaluate.py / plots.py   metrics and figure artifacts
-  tracking.py              tracking URI + experiment helpers
-  config.py                YAML / CLI config
-configs/                   ready-to-run experiment YAML
-scripts/                   train / compare / start MLflow UI
-Makefile                   install, train, compare, ui, server, test
-requirements.txt           pinned dependencies
-tests/                     smoke tests (temp tracking store)
+CLI / UI ──► FastAPI ──► Store (SQLite)
+                │
+                ├── sklearn runner (fit, metrics, plots)
+                ├── ranking (leaderboard + winner)
+                └── registry (promote + audit)
 ```
+
+The React + Vite SPA is the product UI. `workbench ui` builds it if needed and
+serves it from the same process as the API. ClearML and MLflow are **not** on
+the default path.
+
+Optional later: point `WORKBENCH_HOME` at a shared disk, or put the API behind
+a reverse proxy. The schema does not assume localhost.
 
 ## Tests
 
 ```bash
 python -m pytest
-make test
 ```
 
-Tests write to a temporary SQLite URI so they do not touch `./mlflow.db`.
+Coverage: catalog consistency, leaderboard ranking + constraints, exclusive
+production promote with an audit trail, real sklearn train/compare, REST demo
+→ promote.
 
-## Notes
+## Project layout
 
-- Fully local: the default tracking URI is a file on disk.
-- `mlruns/` and `mlflow.db` are created at runtime and are not committed.
-- Python 3.10+ is required (`list[str]` typing, MLflow 3.x).
+```
+workbench/           SDK, store, runner, FastAPI, CLI
+frontend/            React + Vite SPA
+configs/             YAML for train / compare
+tests/               pytest
+scripts/             train / compare / promote / ui wrappers
+```
+
+## Screenshots
+
+See [`docs/screenshots/`](docs/screenshots/) after you run the UI. The compare
+screen is the home of an experiment — not a raw run list.

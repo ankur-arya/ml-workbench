@@ -1,0 +1,19 @@
+# Same model family across several classification datasets.
+experiment: Forest across datasets
+description: Random forest on iris, wine, and breast cancer.
+datasets:
+  - iris
+  - wine
+  - breast_cancer
+models:
+  - name: random_forest
+    params:
+      n_estimators: 80
+      max_depth: 5
+primary_metric: test_accuracy
+maximize: true
+test_size: 0.2
+random_state: 42
+register_model: true
+tags:
+  - compare-datasets

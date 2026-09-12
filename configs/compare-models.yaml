@@ -1,0 +1,24 @@
+# Several classifiers on one dataset — the UI leaderboard is the home screen.
+experiment: Iris bakeoff
+description: Three sklearn classifiers on iris. Promote the recommended winner.
+datasets:
+  - iris
+models:
+  - name: logistic_regression
+    params:
+      max_iter: 400
+  - name: random_forest
+    params:
+      n_estimators: 80
+      max_depth: 4
+  - name: gradient_boosting
+    params:
+      n_estimators: 80
+      max_depth: 2
+primary_metric: test_accuracy
+maximize: true
+test_size: 0.25
+random_state: 42
+register_model: true
+tags:
+  - compare-models

@@ -1,4 +1,4 @@
-"""Matplotlib artifacts logged to MLflow."""
+"""Matplotlib artifacts written next to a run."""
 
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ def save_residuals(
 ) -> Path:
     residuals = y_true.to_numpy() - y_pred
     fig, ax = plt.subplots(figsize=(5.5, 4.5))
-    ax.scatter(y_pred, residuals, alpha=0.7, edgecolor="none")
+    ax.scatter(y_pred, residuals, alpha=0.7, edgecolor="none", color="#3d8bfd")
     ax.axhline(0, color="black", linewidth=1)
     ax.set_xlabel("Predicted")
     ax.set_ylabel("Residual (actual - predicted)")
@@ -73,7 +73,7 @@ def save_feature_importance(
 
     order = np.argsort(values)[-top_n:]
     fig, ax = plt.subplots(figsize=(6.5, 4.5))
-    ax.barh(np.asarray(feature_names)[order], values[order], color="#3b82f6")
+    ax.barh(np.asarray(feature_names)[order], values[order], color="#c9a227")
     ax.set_title(title)
     ax.set_xlabel("Weight")
     fig.tight_layout()
