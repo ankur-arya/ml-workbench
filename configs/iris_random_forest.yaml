@@ -1,0 +1,11 @@
+experiment: sklearn-workbench
+dataset: iris
+model: random_forest
+test_size: 0.2
+random_state: 42
+register_model: true
+run_name: iris-random-forest
+params:
+  n_estimators: 200
+  max_depth: 6
+  min_samples_leaf: 1

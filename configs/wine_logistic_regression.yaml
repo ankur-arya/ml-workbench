@@ -1,0 +1,10 @@
+experiment: sklearn-workbench
+dataset: wine
+model: logistic_regression
+test_size: 0.2
+random_state: 42
+register_model: true
+params:
+  C: 1.0
+  max_iter: 800
+  solver: lbfgs
