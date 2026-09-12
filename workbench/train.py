@@ -12,7 +12,13 @@ import joblib
 from sklearn.model_selection import train_test_split
 
 from workbench import __version__
-from workbench.config import CompareConfig, TrainConfig
+from workbench.config import (
+    DEFAULT_EXPERIMENT,
+    DEFAULT_RANDOM_STATE,
+    DEFAULT_TEST_SIZE,
+    CompareConfig,
+    TrainConfig,
+)
 from workbench.datasets import DatasetBundle, load_dataset
 from workbench.evaluate import (
     classification_report_text,
@@ -64,10 +70,10 @@ def run_comparison(
     datasets: list[str] | None = None,
     models: list[str] | None = None,
     *,
-    experiment: str,
-    test_size: float,
-    random_state: int,
-    register_model: bool,
+    experiment: str | None = None,
+    test_size: float | None = None,
+    random_state: int | None = None,
+    register_model: bool | None = None,
     register_dataset: bool = False,
     offline: bool = False,
     tags: list[str] | None = None,
@@ -80,17 +86,21 @@ def run_comparison(
     WebApp, select the sibling tasks, and click Compare.
     """
     if compare_cfg is not None:
-        datasets = compare_cfg.datasets
-        models = compare_cfg.models
-        experiment = compare_cfg.experiment
-        test_size = compare_cfg.test_size
-        random_state = compare_cfg.random_state
-        register_model = compare_cfg.register_model
+        datasets = datasets or compare_cfg.datasets
+        models = models if models is not None else compare_cfg.models
+        experiment = experiment or compare_cfg.experiment
+        test_size = compare_cfg.test_size if test_size is None else test_size
+        random_state = compare_cfg.random_state if random_state is None else random_state
+        register_model = compare_cfg.register_model if register_model is None else register_model
         register_dataset = compare_cfg.register_dataset
-        offline = compare_cfg.offline
-        tags = list(compare_cfg.tags)
+        offline = offline or compare_cfg.offline
+        tags = list(compare_cfg.tags) + list(tags or [])
 
     datasets = datasets or ["iris", "wine", "diabetes"]
+    experiment = experiment or DEFAULT_EXPERIMENT
+    test_size = DEFAULT_TEST_SIZE if test_size is None else test_size
+    random_state = DEFAULT_RANDOM_STATE if random_state is None else random_state
+    register_model = True if register_model is None else register_model
     factory = session_factory or _default_factory
     group = "compare-" + "-".join(datasets) + "-" + uuid4().hex[:8]
     results: list[TrainResult] = []

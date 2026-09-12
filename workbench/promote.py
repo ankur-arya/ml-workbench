@@ -91,15 +91,16 @@ class ClearMLRegistry:
     def apply_tags(self, model: Any, tags: list[str]) -> list[str]:
         current = [str(tag) for tag in (getattr(model, "tags", None) or [])]
         merged = list(dict.fromkeys([*current, *tags]))
+        # ClearML Model exposes a writable ``tags`` list (not add_tags).
+        try:
+            model.tags = merged
+            return merged
+        except Exception:
+            pass
         if hasattr(model, "add_tags") and callable(model.add_tags):
             model.add_tags(tags)
         elif hasattr(model, "set_tags") and callable(model.set_tags):
             model.set_tags(merged)
-        else:
-            try:
-                model.tags = merged
-            except Exception:
-                pass
         return merged
 
     def publish(self, model: Any) -> None:
