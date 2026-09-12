@@ -201,7 +201,6 @@ export function Experiment() {
           runId={winner.id}
           onClose={() => setPromote(false)}
           onDone={() => {
-            setPromote(false);
             void load();
           }}
         />
