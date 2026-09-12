@@ -28,11 +28,28 @@ htmlcov/
 # Jupyter
 .ipynb_checkpoints/
 
-# Local MLflow tracking store (created when you train or start the UI)
-# Default layout written in the repo root:
-#   mlflow.db          SQLite backend (experiments, runs, model registry)
-#   mlruns/            run artifacts when using the file/SQLite store directly
-#   mlartifacts/       artifacts when using `mlflow server --default-artifact-root`
+# Local artifacts written by training
+artifacts/
+outputs/
+models/
+*.joblib
+*.pkl
+
+# ClearML SDK cache / offline sessions (also lives in $HOME/.clearml)
+.clearml/
+clearml_cache/
+offline/
+*.zip
+
+# Local ClearML Server data (docker volumes under deploy/clearml/data)
+deploy/clearml/data/**
+!deploy/clearml/data/.gitignore
+
+# Do not commit filled-in credentials
+clearml.conf
+~/clearml.conf
+
+# Deprecated MLflow leftovers (if an old checkout still has them)
 mlflow.db
 mlflow.db-journal
 mlruns/

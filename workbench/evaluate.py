@@ -18,7 +18,6 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
-from workbench.datasets import TaskType
 from workbench.models import unwrap_estimator
 
 
@@ -78,7 +77,7 @@ def classification_report_text(
 def estimator_params(model: Any) -> dict[str, Any]:
     inner = unwrap_estimator(model)
     params = inner.get_params(deep=False)
-    # MLflow params must be strings / scalars; stringify nested values.
+    # ClearML / YAML params should be scalars; stringify nested values.
     sanitized: dict[str, Any] = {}
     for key, value in params.items():
         if value is None or isinstance(value, (str, int, float, bool)):

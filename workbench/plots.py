@@ -1,4 +1,4 @@
-"""Matplotlib artifacts logged to MLflow."""
+"""Matplotlib artifacts logged to ClearML."""
 
 from __future__ import annotations
 

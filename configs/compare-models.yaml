@@ -1,0 +1,13 @@
+# Several classifiers on one dataset — compare them in the ClearML WebApp.
+experiment: sklearn-workbench
+datasets:
+  - iris
+models:
+  - logistic_regression
+  - random_forest
+  - gradient_boosting
+test_size: 0.2
+random_state: 42
+register_model: true
+tags:
+  - compare-models

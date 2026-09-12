@@ -1,0 +1,13 @@
+# Same model family across several datasets in one ClearML project.
+experiment: sklearn-workbench
+datasets:
+  - iris
+  - wine
+  - breast_cancer
+models:
+  - random_forest
+test_size: 0.2
+random_state: 42
+register_model: true
+tags:
+  - compare-datasets

@@ -1,0 +1,16 @@
+# Copy to ~/clearml.conf (or pass CLEARML_CONFIG_FILE) after the local server is up.
+# Create credentials in the WebApp: Settings → Workspace → Create new credentials.
+#
+#   cp deploy/clearml/clearml.conf.example ~/clearml.conf
+#
+# Hosted alternative: run `clearml-init` and paste keys from https://app.clear.ml
+
+api {
+    web_server: http://localhost:8080
+    api_server: http://localhost:8008
+    files_server: http://localhost:8081
+    credentials {
+        "access_key": "REPLACE_ME"
+        "secret_key": "REPLACE_ME"
+    }
+}
