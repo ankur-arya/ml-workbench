@@ -1,0 +1,8 @@
+experiment: sklearn-workbench
+dataset: diabetes
+model: ridge
+test_size: 0.2
+random_state: 42
+register_model: true
+params:
+  alpha: 0.5

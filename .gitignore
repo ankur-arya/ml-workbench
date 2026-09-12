@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Test / type / lint caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local MLflow tracking store (created when you train or start the UI)
+# Default layout written in the repo root:
+#   mlflow.db          SQLite backend (experiments, runs, model registry)
+#   mlruns/            run artifacts when using the file/SQLite store directly
+#   mlartifacts/       artifacts when using `mlflow server --default-artifact-root`
+mlflow.db
+mlflow.db-journal
+mlruns/
+mlartifacts/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Misc
+*.log
+.env
+.env.*
