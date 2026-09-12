@@ -65,7 +65,13 @@ body {
 
 a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; color: inherit; }
-h1, h2, h3 { font-family: Newsreader, Georgia, serif; font-weight: 550; letter-spacing: -0.02em; margin: 0; }
+h1, h2, h3 {
+  font-family: Newsreader, Georgia, serif;
+  font-weight: 550;
+  letter-spacing: -0.02em;
+  margin: 0;
+  font-variant-ligatures: none;
+}
 p { margin: 0; }
 
 .app {

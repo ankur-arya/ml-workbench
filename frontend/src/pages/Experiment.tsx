@@ -228,9 +228,30 @@ function SideBySide({ leftId, rightId, metrics }: { leftId: string; rightId: str
 
   if (!left || !right) return <div className="card pad">Loading comparison…</div>;
 
+  const INTERESTING = new Set([
+    "n_estimators",
+    "max_depth",
+    "learning_rate",
+    "C",
+    "alpha",
+    "max_iter",
+    "kernel",
+    "solver",
+    "min_samples_leaf",
+    "min_samples_split",
+  ]);
   const paramKeys = Array.from(
-    new Set([...Object.keys(left.params || {}), ...Object.keys(right.params || {})].filter((k) => k.startsWith("model__"))),
-  );
+    new Set(
+      [...Object.keys(left.params || {}), ...Object.keys(right.params || {})]
+        .filter((key) => key.startsWith("model__"))
+        .filter((key) => {
+          const short = key.replace("model__", "");
+          const a = String(left.params?.[key] ?? "—");
+          const b = String(right.params?.[key] ?? "—");
+          return INTERESTING.has(short) || a !== b;
+        }),
+    ),
+  ).slice(0, 12);
 
   return (
     <div style={{ marginTop: 16 }}>

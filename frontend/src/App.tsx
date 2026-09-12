@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { get } from "./api";
 import type { Bootstrap } from "./types";
@@ -13,6 +13,7 @@ import { Datasets } from "./pages/Datasets";
 export default function App() {
   const [boot, setBoot] = useState<Bootstrap | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const location = useLocation();
 
   async function refresh() {
     try {
@@ -24,7 +25,7 @@ export default function App() {
 
   useEffect(() => {
     void refresh();
-  }, []);
+  }, [location.pathname]);
 
   return (
     <Layout boot={boot} onRefresh={refresh}>
