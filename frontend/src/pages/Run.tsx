@@ -14,21 +14,23 @@ export function RunDetail() {
   const [report, setReport] = useState<string | null>(null);
   const [promote, setPromote] = useState(false);
 
-  useEffect(() => {
+  async function load() {
     if (!id) return;
-    void (async () => {
-      const payload = await get<Run>(`/api/runs/${id}`);
-      setRun(payload);
-      const matrix = payload.artifacts.find((a) => a.name === "confusion_matrix.json");
-      const residuals = payload.artifacts.find((a) => a.name === "residuals.json");
-      const text = payload.artifacts.find((a) => a.name === "classification_report.txt");
-      if (matrix) setPlot(await get(artifactUrl(matrix.id)));
-      else if (residuals) setPlot(await get(artifactUrl(residuals.id)));
-      if (text) {
-        const body = await get<{ text: string }>(artifactUrl(text.id));
-        setReport(body.text);
-      }
-    })();
+    const payload = await get<Run>(`/api/runs/${id}`);
+    setRun(payload);
+    const matrix = payload.artifacts.find((a) => a.name === "confusion_matrix.json");
+    const residuals = payload.artifacts.find((a) => a.name === "residuals.json");
+    const text = payload.artifacts.find((a) => a.name === "classification_report.txt");
+    if (matrix) setPlot(await get(artifactUrl(matrix.id)));
+    else if (residuals) setPlot(await get(artifactUrl(residuals.id)));
+    if (text) {
+      const body = await get<{ text: string }>(artifactUrl(text.id));
+      setReport(body.text);
+    }
+  }
+
+  useEffect(() => {
+    void load();
   }, [id]);
 
   if (!run) return <div className="card pad">Loading run…</div>;
@@ -159,7 +161,14 @@ export function RunDetail() {
       </div>
 
       {promote && (
-        <PromoteModal runId={run.id} onClose={() => setPromote(false)} onDone={() => setPromote(false)} />
+        <PromoteModal
+          runId={run.id}
+          onClose={() => setPromote(false)}
+          onDone={() => {
+            setPromote(false);
+            void load();
+          }}
+        />
       )}
     </>
   );

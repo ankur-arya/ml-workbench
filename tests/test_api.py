@@ -32,3 +32,24 @@ def test_health_and_demo_promote(store: Store) -> None:
 
     experiments = client.get("/api/experiments").json()
     assert experiments[0]["winner_id"] == winner_id
+
+
+def test_promote_api_returns_note_validation_detail(store: Store) -> None:
+    client = TestClient(create_app(store))
+    experiment = store.create_experiment(name="short-note", primary_metric="test_accuracy")
+    run = store.create_run(
+        experiment_id=experiment["id"],
+        name="iris-rf",
+        model_name="random_forest",
+        dataset_id="iris",
+        task="classification",
+        status="succeeded",
+    )
+    store.set_metrics(run["id"], {"test_accuracy": 0.96})
+    rejected = client.post(
+        "/api/promote",
+        json={"run_id": run["id"], "stage": "production", "note": "no", "actor": "pytest"},
+    )
+    assert rejected.status_code == 400
+    assert rejected.json()["detail"] == "A promotion note is required (at least 4 characters)."
+    assert "body stream already read" not in rejected.json()["detail"]

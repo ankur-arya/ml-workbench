@@ -345,6 +345,7 @@ table.board .mono { font-family: "IBM Plex Mono", monospace; }
   background: var(--bg-2); border: 1px solid var(--bad); color: var(--bad);
   padding: 10px 14px; border-radius: 10px; max-width: 420px; z-index: 30;
 }
+.toast.ok { border-color: var(--ok); color: var(--ok); }
 
 .progress {
   height: 8px; background: var(--bg-3); border-radius: 99px; overflow: hidden; margin-top: 10px;
