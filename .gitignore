@@ -28,15 +28,22 @@ htmlcov/
 # Jupyter
 .ipynb_checkpoints/
 
-# Local MLflow tracking store (created when you train or start the UI)
-# Default layout written in the repo root:
-#   mlflow.db          SQLite backend (experiments, runs, model registry)
-#   mlruns/            run artifacts when using the file/SQLite store directly
-#   mlartifacts/       artifacts when using `mlflow server --default-artifact-root`
+# Local workbench store
+.workbench/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Legacy MLflow leftovers (if an older checkout trained here)
 mlflow.db
-mlflow.db-journal
 mlruns/
 mlartifacts/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
 
 # OS / editor
 .DS_Store

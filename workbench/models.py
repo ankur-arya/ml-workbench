@@ -43,6 +43,75 @@ _SCALE_MODELS = {
     "svr",
 }
 
+MODEL_CATALOG: dict[str, dict[str, Any]] = {
+    "logistic_regression": {
+        "label": "Logistic Regression",
+        "blurb": "Fast linear baseline. Strong when classes are roughly linearly separable.",
+        "tasks": ["classification"],
+        "params": [
+            {"key": "C", "label": "C", "type": "float", "default": 1.0, "min": 0.01, "max": 100},
+            {"key": "max_iter", "label": "Max iter", "type": "int", "default": 500, "min": 100, "max": 4000},
+        ],
+    },
+    "random_forest": {
+        "label": "Random Forest",
+        "blurb": "Bagged trees. Robust default for tabular classification and regression.",
+        "tasks": ["classification", "regression"],
+        "params": [
+            {"key": "n_estimators", "label": "Trees", "type": "int", "default": 100, "min": 10, "max": 500},
+            {"key": "max_depth", "label": "Max depth", "type": "int", "default": None, "min": 1, "max": 40},
+        ],
+    },
+    "gradient_boosting": {
+        "label": "Gradient Boosting",
+        "blurb": "Stage-wise trees. Usually the accuracy pick on small sklearn tables.",
+        "tasks": ["classification", "regression"],
+        "params": [
+            {"key": "n_estimators", "label": "Stages", "type": "int", "default": 100, "min": 20, "max": 400},
+            {"key": "learning_rate", "label": "Learn rate", "type": "float", "default": 0.1, "min": 0.01, "max": 1},
+            {"key": "max_depth", "label": "Max depth", "type": "int", "default": 3, "min": 1, "max": 8},
+        ],
+    },
+    "svc": {
+        "label": "Support Vector (C)",
+        "blurb": "RBF kernel classifier. Slower, sharp decision boundaries.",
+        "tasks": ["classification"],
+        "params": [
+            {"key": "C", "label": "C", "type": "float", "default": 1.0, "min": 0.01, "max": 100},
+        ],
+    },
+    "linear_regression": {
+        "label": "Linear Regression",
+        "blurb": "Ordinary least squares. The honest regression baseline.",
+        "tasks": ["regression"],
+        "params": [],
+    },
+    "ridge": {
+        "label": "Ridge",
+        "blurb": "L2-regularized linear regression. Stable when features correlate.",
+        "tasks": ["regression"],
+        "params": [
+            {"key": "alpha", "label": "Alpha", "type": "float", "default": 1.0, "min": 0.0001, "max": 100},
+        ],
+    },
+    "lasso": {
+        "label": "Lasso",
+        "blurb": "L1-regularized linear regression. Promotes sparse coefficients.",
+        "tasks": ["regression"],
+        "params": [
+            {"key": "alpha", "label": "Alpha", "type": "float", "default": 0.1, "min": 0.0001, "max": 10},
+        ],
+    },
+    "svr": {
+        "label": "Support Vector (R)",
+        "blurb": "RBF kernel regressor for non-linear residual structure.",
+        "tasks": ["regression"],
+        "params": [
+            {"key": "C", "label": "C", "type": "float", "default": 1.0, "min": 0.01, "max": 100},
+        ],
+    },
+}
+
 
 def list_models(task: TaskType | None = None) -> list[str]:
     if task == "classification":
@@ -50,6 +119,14 @@ def list_models(task: TaskType | None = None) -> list[str]:
     if task == "regression":
         return list(REGRESSION_MODELS)
     return sorted(set(CLASSIFICATION_MODELS) | set(REGRESSION_MODELS))
+
+
+def catalog_for_ui() -> list[dict[str, Any]]:
+    items = []
+    for key in list_models():
+        meta = MODEL_CATALOG[key]
+        items.append({"key": key, **meta})
+    return items
 
 
 def _estimator_for(name: str, task: TaskType, params: dict[str, Any]) -> BaseEstimator:
@@ -91,9 +168,8 @@ def _estimator_for(name: str, task: TaskType, params: dict[str, Any]) -> BaseEst
     if name in {"linear_regression"}:
         defaults.pop("random_state", None)
 
-    merged = {**defaults, **params}
-    estimator = catalog[name](**merged)
-    return estimator
+    merged = {**defaults, **{k: v for k, v in params.items() if v is not None}}
+    return catalog[name](**merged)
 
 
 def build_model(
