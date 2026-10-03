@@ -165,7 +165,6 @@ export function RunDetail() {
           runId={run.id}
           onClose={() => setPromote(false)}
           onDone={() => {
-            setPromote(false);
             void load();
           }}
         />
